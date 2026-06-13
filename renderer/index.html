@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Sweep</title>
+<!-- Fonts: graceful fallback to system fonts when offline -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Full-window background feedback while dragging / deciding -->
+<div id="bgFx"></div>
+
+<!-- =================== START =================== -->
+<div class="screen show" id="start">
+  <div class="topbar">
+    <div class="logo"><span class="mark"><svg viewBox="0 0 28 28" fill="#fff" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-20 14 14)"><rect x="12.4" y="3.2" width="3.2" height="13.6" rx="1.6"/><rect x="10.4" y="15.4" width="7.2" height="2.4" rx="1"/><path d="M11 17.6 H17 L20.2 26 Q20.2 27 19.2 27 H8.8 Q7.8 27 7.8 26 Z"/></g></svg></span>Sweep<span class="dot">.</span></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="themeBtn"></button>
+    <button class="icon-btn js-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </div>
+  <div class="start-body">
+    <div class="start-hero">
+      <h1 id="heroH1"></h1>
+      <p id="heroP"></p>
+    </div>
+
+    <p class="sec-title" id="secWhere"></p>
+    <div class="scope-grid" id="scopeGrid"></div>
+
+    <p class="sec-title" id="secHow"></p>
+    <div class="mode-list" id="modeList"></div>
+
+    <button class="btn-primary" id="startBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <span id="startLabel"></span>
+    </button>
+
+    <div class="start-footer">
+      <button class="foot-link" id="historyBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l3 3"/></svg>
+        <span id="footHistory"></span>
+      </button>
+      <button class="foot-link kofi" id="supportBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+        <span id="footSupport"></span>
+      </button>
+      <button class="foot-link" id="websiteBtn"><span id="footWebsite"></span></button>
+      <span class="foot-brand"><span id="footBrand"></span> · <span id="footVer"></span></span>
+    </div>
+  </div>
+</div>
+
+<!-- =================== INTRO (first run) =================== -->
+<div class="screen" id="intro">
+  <button class="intro-skip" id="introSkip"></button>
+  <div class="intro-body">
+    <div class="intro-stage" id="introStage"></div>
+    <div class="intro-dots" id="introDots"></div>
+    <div class="intro-nav">
+      <button class="btn-ghost" id="introBack"></button>
+      <button class="btn-primary" id="introNext"></button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== HISTORY =================== -->
+<div class="screen" id="history">
+  <div class="topbar">
+    <button class="icon-btn" id="histBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="logo"><span class="mark"><svg viewBox="0 0 28 28" fill="#fff" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-20 14 14)"><rect x="12.4" y="3.2" width="3.2" height="13.6" rx="1.6"/><rect x="10.4" y="15.4" width="7.2" height="2.4" rx="1"/><path d="M11 17.6 H17 L20.2 26 Q20.2 27 19.2 27 H8.8 Q7.8 27 7.8 26 Z"/></g></svg></span><span id="histTitle"></span></div>
+    <div class="spacer"></div>
+    <button class="btn-ghost" id="histClear"></button>
+  </div>
+  <div class="history-body" id="historyBody"></div>
+</div>
+
+<!-- =================== APPLY ANIMATION (fullscreen) =================== -->
+<div id="sweepAnim">
+  <div class="anim-core">
+    <div class="anim-broom">
+      <svg viewBox="0 0 28 28" fill="#fff" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-20 14 14)"><rect x="12.4" y="3.2" width="3.2" height="13.6" rx="1.6"/><rect x="10.4" y="15.4" width="7.2" height="2.4" rx="1"/><path d="M11 17.6 H17 L20.2 26 Q20.2 27 19.2 27 H8.8 Q7.8 27 7.8 26 Z"/></g></svg>
+    </div>
+    <div class="anim-particles" id="animParticles"></div>
+    <div class="anim-label" id="animLabel"></div>
+  </div>
+</div>
+
+<!-- =================== SWEEP =================== -->
+<div class="screen" id="sweep">
+  <div class="topbar">
+    <button class="icon-btn" id="backBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg></button>
+    <div class="scope-pill" id="scopePill"></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="themeBtn2"></button>
+    <button class="icon-btn js-settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+  </div>
+
+  <div class="filters" id="filters"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 0</div>
+  </div>
+
+  <div class="sweep-main">
+    <div class="sweep-center">
+      <div class="stage"><div class="deck" id="deck"></div></div>
+
+      <div class="actions">
+        <button class="act undo" id="undoBtn" disabled><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>
+        <button class="act del sm" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg><span class="kb"></span></button>
+        <button class="act sort lg" data-act="sort"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 11v5M9.5 13.5 12 11l2.5 2.5"/></svg><span class="kb"></span></button>
+        <button class="act keep lg" data-act="keep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span class="kb"></span></button>
+        <button class="act skip sm" data-act="skip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span class="kb"></span></button>
+      </div>
+      <div class="hint" id="hint"></div>
+    </div>
+
+    <div class="side">
+      <div class="dock-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span id="dockLabelText"></span></div>
+      <div class="dock" id="dock"></div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== REVIEW =================== -->
+<div class="screen" id="review">
+  <div class="topbar">
+    <div class="logo"><span class="mark"><svg viewBox="0 0 28 28" fill="#fff" xmlns="http://www.w3.org/2000/svg"><g transform="rotate(-20 14 14)"><rect x="12.4" y="3.2" width="3.2" height="13.6" rx="1.6"/><rect x="10.4" y="15.4" width="7.2" height="2.4" rx="1"/><path d="M11 17.6 H17 L20.2 26 Q20.2 27 19.2 27 H8.8 Q7.8 27 7.8 26 Z"/></g></svg></span>Sweep<span class="dot">.</span></div>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="themeBtn3"></button>
+  </div>
+  <div class="review-head">
+    <h2 id="revTitle"></h2>
+    <p id="revSub"></p>
+  </div>
+  <div class="review-body" id="reviewBody"></div>
+  <div class="review-footer">
+    <div class="free-note" id="freeNote"></div>
+    <button class="btn-danger" id="applyBtn"></button>
+  </div>
+</div>
+
+<!-- =================== DONE =================== -->
+<div class="screen" id="done">
+  <div class="done-body">
+    <div class="big"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h2 id="doneTitle"></h2>
+    <p id="doneText"></p>
+    <div class="sum-stats" id="doneStats"></div>
+    <!-- One button per folder that actually received files -->
+    <div class="done-folders" id="doneFolders"></div>
+    <div class="done-actions">
+      <button class="btn-ghost" id="undoMoveBtn" style="display:none"></button>
+      <button class="btn-ghost" id="openTrashBtn" style="display:none"></button>
+      <button class="btn-primary" id="againBtn"></button>
+    </div>
+  </div>
+</div>
+
+<!-- =================== Overlays =================== -->
+<div class="scrim" id="scrim"></div>
+
+<div class="modal" id="folderModal">
+  <h3 id="pinTitle"></h3>
+  <input id="folderInput" maxlength="28">
+  <p class="sec-label" id="locTitle" style="margin-bottom:8px"></p>
+  <div class="loc-row" id="locRow"></div>
+  <div class="row">
+    <button class="btn-ghost" id="folderCancel"></button>
+    <button class="btn-primary" id="folderCreate" style="padding:12px 20px;font-size:14px"></button>
+  </div>
+  <div class="modal-divider"><span id="orText"></span></div>
+  <button class="btn-ghost wide" id="pinExisting"></button>
+</div>
+
+<div class="modal" id="removeModal">
+  <h3 id="rmTitle"></h3>
+  <p class="modal-sub" id="removeText"></p>
+  <div class="row">
+    <button class="btn-ghost" id="removeCancel"></button>
+    <button class="btn-danger" id="removeConfirm" style="padding:12px 20px;font-size:14px"></button>
+  </div>
+</div>
+
+<div class="modal" id="pickModal">
+  <h3 id="pickTitle"></h3>
+  <div class="pick-list" id="pickList"></div>
+</div>
+
+<div class="drawer" id="drawer">
+  <div class="drawer-head"><h3 id="drawerTitle"></h3>
+    <button class="icon-btn" id="closeDrawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="drawer-body">
+    <p class="sec-label" id="langTitle"></p>
+    <div class="loc-row" id="langRow"></div>
+
+    <p class="sec-label" id="kbTitle" style="margin-top:26px"></p>
+    <div id="kbList"></div>
+
+    <p class="sec-label" id="behaviorTitle" style="margin-top:26px"></p>
+    <div class="toggle-row"><span style="font-size:14px" id="togTrash"></span><div class="switch on" data-toggle></div></div>
+    <div class="toggle-row"><span style="font-size:14px" id="togReview"></span><div class="switch on" data-toggle></div></div>
+    <div class="toggle-row"><span style="font-size:14px" id="togAI"></span><div class="switch" data-toggle></div></div>
+    <div class="toggle-row"><span style="font-size:14px" id="togIntro"></span><div class="switch" id="introSwitch"></div></div>
+
+    <button class="btn-ghost wide" id="drawerHistory" style="margin-top:22px"></button>
+
+    <p class="sec-label" id="aboutTitle" style="margin-top:26px"></p>
+    <div class="about-box">
+      <div class="about-row"><span id="aboutVerLabel"></span><b id="aboutVer"></b></div>
+      <button class="foot-link" id="drawerSupport"><span id="drawerSupportTx"></span></button>
+      <button class="foot-link" id="drawerWebsite"><span id="drawerWebsiteTx"></span></button>
+      <div class="about-made"><span id="aboutMade"></span> · emunator.com</div>
+    </div>
+  </div>
+</div>
+
+<!-- mammoth: converts .docx to HTML (exposes window.mammoth) -->
+<script src="../node_modules/mammoth/mammoth.browser.min.js"></script>
+<!-- SheetJS: reads .xlsx/.xls (exposes window.XLSX) -->
+<script src="../node_modules/xlsx/dist/xlsx.full.min.js"></script>
+<!-- pdf.js: renders PDF pages onto a canvas. It is an ES module,
+     so this small wrapper makes it available globally. -->
+<script type="module">
+  import * as pdfjsLib from '../node_modules/pdfjs-dist/build/pdf.min.mjs';
+  try {
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      new URL('../node_modules/pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).href;
+  } catch { /* works without the worker too, just a bit slower */ }
+  window.pdfjsLib = pdfjsLib;
+  window.dispatchEvent(new Event('pdfjs-ready'));
+</script>
+<script src="renderer.js"></script>
+</body>
+</html>

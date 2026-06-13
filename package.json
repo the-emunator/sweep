@@ -1,0 +1,62 @@
+{
+  "name": "sweep",
+  "productName": "Sweep",
+  "version": "0.8.0",
+  "description": "Tidy up your files like a card game — swipe to keep, delete, or sort. Nothing happens until you confirm.",
+  "main": "main.js",
+  "author": "Emunator (https://emunator.com)",
+  "license": "MIT",
+  "homepage": "https://sweep.emunator.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/the-emunator/sweep.git"
+  },
+  "bugs": {
+    "url": "https://github.com/the-emunator/sweep/issues"
+  },
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win"
+  },
+  "devDependencies": {
+    "electron": "^42.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "dependencies": {
+    "mammoth": "^1.8.0",
+    "xlsx": "^0.18.5",
+    "pdfjs-dist": "^4.6.82"
+  },
+  "build": {
+    "appId": "com.emunator.sweep",
+    "productName": "Sweep",
+    "copyright": "Copyright © 2026 Emunator",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "build/icon.ico",
+      "build/icon-256.png"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Sweep",
+      "artifactName": "Sweep-Setup-${version}.exe"
+    },
+    "portable": {
+      "artifactName": "Sweep-${version}-portable.exe"
+    }
+  }
+}
