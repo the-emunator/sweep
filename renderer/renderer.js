@@ -275,7 +275,7 @@ function applyBtnHTML() {
 /* ================= Constants ================= */
 // Fallback; the real value comes from the main process at init
 // (window.sweep.getAppVersion → package.json "version").
-let APP_VERSION = '0.8';
+let APP_VERSION = '0.9.0';
 const LINKS = { website: 'https://sweep.emunator.com', kofi: 'https://ko-fi.com/the_emunator', emunator: 'https://emunator.com' };
 const COLORS = { folder:'#FFB020', shortcut:'#8A93A6', app:'#E8553B', video:'#E84393', audio:'#00B894', image:'#16C079', pdf:'#FF4D6D', doc:'#3D7BFF', sheet:'#16C079', text:'#9A6BFF', model:'#00B8D9', archive:'#C77D2E', other:'#FF9F1C' };
 const FILTER_KEYS = ['all','folder','shortcut','app','video','audio','image','pdf','doc','sheet','text','model','archive','other'];

@@ -1,7 +1,7 @@
 {
   "name": "sweep",
   "productName": "Sweep",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Tidy up your files like a card game — swipe to keep, delete, or sort. Nothing happens until you confirm.",
   "main": "main.js",
   "author": "Emunator (https://emunator.com)",
