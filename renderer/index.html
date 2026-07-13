@@ -14,6 +14,18 @@
 <!-- Full-window background feedback while dragging / deciding -->
 <div id="bgFx"></div>
 
+<!-- Auto-update banner (hidden until there is something to say) -->
+<div id="updateBanner" class="update-banner">
+  <span class="update-spinner" id="updateSpinner"></span>
+  <span class="update-text" id="updateText"></span>
+  <div class="update-actions">
+    <button class="update-btn" id="updateAction"></button>
+    <button class="update-close" id="updateDismiss" aria-label="Dismiss">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+</div>
+
 <!-- =================== START =================== -->
 <div class="screen show" id="start">
   <div class="topbar">
@@ -207,6 +219,7 @@
     <div class="toggle-row"><span style="font-size:14px" id="togTrash"></span><div class="switch on" data-toggle></div></div>
     <div class="toggle-row"><span style="font-size:14px" id="togReview"></span><div class="switch on" data-toggle></div></div>
     <div class="toggle-row"><span style="font-size:14px" id="togAI"></span><div class="switch" data-toggle></div></div>
+    <div class="toggle-row"><span style="font-size:14px" id="togAutoUpdate"></span><div class="switch" id="autoUpdateSwitch"></div></div>
     <div class="toggle-row"><span style="font-size:14px" id="togIntro"></span><div class="switch" id="introSwitch"></div></div>
 
     <button class="btn-ghost wide" id="drawerHistory" style="margin-top:22px"></button>
@@ -214,6 +227,7 @@
     <p class="sec-label" id="aboutTitle" style="margin-top:26px"></p>
     <div class="about-box">
       <div class="about-row"><span id="aboutVerLabel"></span><b id="aboutVer"></b></div>
+      <button class="foot-link" id="drawerUpdate"><span id="drawerUpdateTx"></span></button>
       <button class="foot-link" id="drawerSupport"><span id="drawerSupportTx"></span></button>
       <button class="foot-link" id="drawerWebsite"><span id="drawerWebsiteTx"></span></button>
       <div class="about-made"><span id="aboutMade"></span> · emunator.com</div>

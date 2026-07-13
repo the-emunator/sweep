@@ -24,4 +24,16 @@ contextBridge.exposeInMainWorld('sweep', {
   openFile:        (filePath)           => ipcRenderer.invoke('open-file', filePath),
   applyActions:    (ops)                => ipcRenderer.invoke('apply-actions', ops),
   openRecycleBin:  ()                   => ipcRenderer.invoke('open-recycle-bin'),
+
+  // --- Auto-update ---
+  getAppVersion:   ()                   => ipcRenderer.invoke('get-app-version'),
+  checkForUpdates: ()                   => ipcRenderer.invoke('check-for-updates'),
+  installUpdate:   ()                   => ipcRenderer.invoke('install-update'),
+  setAutoInstall:  (on)                 => ipcRenderer.invoke('set-auto-install', on),
+  // Subscribe to update-status pushes from the main process.
+  onUpdateStatus:  (cb) => {
+    const listener = (_e, payload) => cb(payload);
+    ipcRenderer.on('update-status', listener);
+    return () => ipcRenderer.removeListener('update-status', listener);
+  },
 });

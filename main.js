@@ -7,6 +7,7 @@
 // =====================================================================
 
 const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs/promises');
 const crypto = require('crypto');
@@ -33,9 +34,79 @@ function createWindow() {
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 }
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  win.webContents.once('did-finish-load', initAutoUpdater);
+});
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+
+// =====================================================================
+// Auto-update (electron-updater + GitHub Releases)
+// ---------------------------------------------------------------------
+// On start we quietly ask GitHub whether a newer release exists. If so,
+// the patch is downloaded in the background and the UI shows a small
+// "Update ready – restart" banner. One click installs it and relaunches.
+// The user never has to download or reinstall anything by hand.
+//
+// Only the INSTALLED (NSIS) build can update itself – the portable .exe
+// and a dev run (`npm start`) have no installer to swap out, so we skip
+// them to avoid noise/errors.
+// =====================================================================
+
+// Tell the renderer what's going on. state is one of:
+// 'checking' | 'available' | 'none' | 'progress' | 'downloaded' | 'error'
+function sendUpdate(state, data = {}) {
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('update-status', { state, ...data });
+  }
+}
+
+function initAutoUpdater() {
+  // A dev run is not packaged, and there is no update feed to hit.
+  if (!app.isPackaged) return;
+
+  autoUpdater.autoDownload = true;              // grab the patch as soon as we see one
+  // Default OFF: nothing is installed until the user clicks. The renderer
+  // syncs the user's preference via 'set-auto-install' (see below). When
+  // ON, a pending patch also applies silently when the app is closed.
+  autoUpdater.autoInstallOnAppQuit = false;
+
+  autoUpdater.on('checking-for-update', () => sendUpdate('checking'));
+  autoUpdater.on('update-available', (info) => sendUpdate('available', { version: info.version }));
+  autoUpdater.on('update-not-available', () => sendUpdate('none'));
+  autoUpdater.on('download-progress', (p) => sendUpdate('progress', { percent: Math.round(p.percent) }));
+  autoUpdater.on('update-downloaded', (info) => sendUpdate('downloaded', { version: info.version }));
+  autoUpdater.on('error', (err) => sendUpdate('error', { message: String(err && err.message || err) }));
+
+  // Silent check on launch. Errors (e.g. offline) are handled by the
+  // 'error' event above and simply leave the app as-is.
+  autoUpdater.checkForUpdates().catch(() => {});
+}
+
+// --- Manual "Check for updates" from the settings drawer ---
+ipcMain.handle('check-for-updates', async () => {
+  if (!app.isPackaged) { sendUpdate('none', { dev: true }); return; }
+  try { await autoUpdater.checkForUpdates(); }
+  catch (err) { sendUpdate('error', { message: String(err && err.message || err) }); }
+});
+
+// --- Install the downloaded patch and relaunch ---
+ipcMain.handle('install-update', () => {
+  // isSilent = false (show the NSIS progress), forceRunAfter = true (reopen Sweep).
+  setImmediate(() => autoUpdater.quitAndInstall(false, true));
+});
+
+// --- Whether a pending patch should install itself when the app quits ---
+// Mirrors the "Install updates automatically" switch in the UI. The
+// download-then-click flow itself is driven by the renderer; this only
+// governs the silent install-on-quit behaviour.
+ipcMain.handle('set-auto-install', (_e, on) => {
+  autoUpdater.autoInstallOnAppQuit = !!on;
+});
+
+// --- The app's real version (for the About box / update banner) ---
+ipcMain.handle('get-app-version', () => app.getVersion());
 
 // =====================================================================
 // Helpers

@@ -26,12 +26,20 @@
   "dependencies": {
     "mammoth": "^1.8.0",
     "xlsx": "^0.18.5",
-    "pdfjs-dist": "^4.6.82"
+    "pdfjs-dist": "^4.6.82",
+    "electron-updater": "^6.3.9"
   },
   "build": {
     "appId": "com.emunator.sweep",
     "productName": "Sweep",
     "copyright": "Copyright © 2026 Emunator",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "the-emunator",
+        "repo": "sweep"
+      }
+    ],
     "files": [
       "main.js",
       "preload.js",

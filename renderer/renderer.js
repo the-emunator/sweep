@@ -83,6 +83,18 @@ const I18N = {
     // --- branding / about ---
     support: 'Support Sweep', website: 'Website', made_by: 'by Emunator',
     about: 'About', version_label: 'Version',
+    // --- auto-update ---
+    upd_check: 'Check for updates',
+    upd_checking: 'Checking for updates…',
+    upd_none: "You're up to date.",
+    upd_available: v => `Downloading update ${v}…`,
+    upd_progress: p => `Downloading update… ${p}%`,
+    upd_ready: v => `Update ${v} is ready.`,
+    upd_error: 'Update check failed.',
+    upd_restart: 'Restart & install',
+    upd_dev: 'Updates only work in the installed app.',
+    upd_installing: v => `Installing update ${v}…`,
+    tog_auto_install: 'Install updates automatically',
     // --- intro / onboarding ---
     tog_intro: 'Show the intro again next start',
     intro_skip: 'Skip', intro_back: 'Back', intro_next: 'Next', intro_start: 'Start sweeping',
@@ -177,6 +189,18 @@ const I18N = {
     // --- branding / about ---
     support: 'Sweep unterstützen', website: 'Webseite', made_by: 'von Emunator',
     about: 'Über', version_label: 'Version',
+    // --- auto-update ---
+    upd_check: 'Nach Updates suchen',
+    upd_checking: 'Suche nach Updates…',
+    upd_none: 'Du bist auf dem neuesten Stand.',
+    upd_available: v => `Update ${v} wird geladen…`,
+    upd_progress: p => `Update wird geladen… ${p}%`,
+    upd_ready: v => `Update ${v} ist bereit.`,
+    upd_error: 'Update-Prüfung fehlgeschlagen.',
+    upd_restart: 'Neu starten & installieren',
+    upd_dev: 'Updates funktionieren nur in der installierten App.',
+    upd_installing: v => `Update ${v} wird installiert…`,
+    tog_auto_install: 'Updates automatisch installieren',
     // --- intro / onboarding ---
     tog_intro: 'Intro beim nächsten Start erneut zeigen',
     intro_skip: 'Überspringen', intro_back: 'Zurück', intro_next: 'Weiter', intro_start: 'Los geht\'s',
@@ -212,6 +236,7 @@ const STATIC_TEXT = [
   ['dockLabelText', 'dock_label'],
   ['drawerTitle', 'settings'], ['langTitle', 'language'], ['kbTitle', 'kb_title'],
   ['behaviorTitle', 'behavior'], ['togTrash', 'tog_trash'], ['togReview', 'tog_review'], ['togAI', 'tog_ai'],
+  ['togAutoUpdate', 'tog_auto_install'],
   ['pinTitle', 'pin_title'], ['locTitle', 'location'], ['folderCancel', 'cancel'],
   ['folderCreate', 'pin'], ['orText', 'or'], ['pinExisting', 'pin_existing'],
   ['rmTitle', 'rm_title'], ['removeCancel', 'cancel'], ['removeConfirm', 'remove'],
@@ -225,6 +250,7 @@ const STATIC_TEXT = [
   ['introBack', 'intro_back'], ['introNext', 'intro_next'], ['introSkip', 'intro_skip'],
   ['togIntro', 'tog_intro'], ['drawerHistory', 'history'],
   ['aboutTitle', 'about'], ['aboutVerLabel', 'version_label'],
+  ['drawerUpdateTx', 'upd_check'],
   ['drawerSupportTx', 'support'], ['drawerWebsiteTx', 'website'], ['aboutMade', 'made_by'],
 ];
 function applyStatic() {
@@ -247,7 +273,9 @@ function applyBtnHTML() {
 }
 
 /* ================= Constants ================= */
-const APP_VERSION = '0.8';
+// Fallback; the real value comes from the main process at init
+// (window.sweep.getAppVersion → package.json "version").
+let APP_VERSION = '0.8';
 const LINKS = { website: 'https://sweep.emunator.com', kofi: 'https://ko-fi.com/the_emunator', emunator: 'https://emunator.com' };
 const COLORS = { folder:'#FFB020', shortcut:'#8A93A6', app:'#E8553B', video:'#E84393', audio:'#00B894', image:'#16C079', pdf:'#FF4D6D', doc:'#3D7BFF', sheet:'#16C079', text:'#9A6BFF', model:'#00B8D9', archive:'#C77D2E', other:'#FF9F1C' };
 const FILTER_KEYS = ['all','folder','shortcut','app','video','audio','image','pdf','doc','sheet','text','model','archive','other'];
@@ -1539,6 +1567,109 @@ $('#websiteBtn').onclick   = () => window.sweep.openExternal(LINKS.website);
 $('#drawerSupport').onclick = () => window.sweep.openExternal(LINKS.kofi);
 $('#drawerWebsite').onclick = () => window.sweep.openExternal(LINKS.website);
 
+/* ================= Auto-update ================= */
+// The main process pushes 'update-status' events (see main.js). We turn
+// them into a small banner. A downloaded patch is installed on one click.
+(function initUpdates() {
+  const banner  = $('#updateBanner');
+  const spinner = $('#updateSpinner');
+  const text    = $('#updateText');
+  const action  = $('#updateAction');
+  const dismiss = $('#updateDismiss');
+  if (!banner) return;
+
+  let downloadedReady = false;   // is a patch downloaded and waiting?
+  let manualCheck = false;       // did the user click "Check for updates"?
+
+  function showBanner() { banner.classList.add('show'); }
+  function hideBanner() { banner.classList.remove('show'); }
+
+  // Configure the banner for a given state. `spin` shows the spinner,
+  // `btn` (text) shows the primary button, otherwise it's hidden.
+  function render({ msg, spin = false, btn = null, onClick = null, auto = false }) {
+    text.textContent = msg;
+    spinner.hidden = !spin;
+    if (btn) { action.hidden = false; action.textContent = btn; action.onclick = onClick; }
+    else { action.hidden = true; action.onclick = null; }
+    showBanner();
+    // Auto-dismiss purely informational banners after a few seconds.
+    if (auto) setTimeout(() => { if (!downloadedReady) hideBanner(); }, 4500);
+  }
+
+  window.sweep.onUpdateStatus((p) => {
+    switch (p.state) {
+      case 'checking':
+        if (manualCheck) render({ msg: t('upd_checking'), spin: true });
+        break;
+      case 'available':
+        render({ msg: t('upd_available', p.version), spin: true });
+        break;
+      case 'progress':
+        render({ msg: t('upd_progress', p.percent), spin: true });
+        break;
+      case 'downloaded':
+        downloadedReady = true;
+        if (autoOn()) {
+          // Auto-install is enabled → apply the patch and relaunch on its
+          // own, after a short notice so the restart isn't a surprise.
+          render({ msg: t('upd_installing', p.version), spin: true });
+          setTimeout(() => window.sweep.installUpdate(), 2500);
+        } else {
+          // Default: just inform, the user decides when to install.
+          render({
+            msg: t('upd_ready', p.version),
+            btn: t('upd_restart'),
+            onClick: () => window.sweep.installUpdate(),
+          });
+        }
+        break;
+      case 'none':
+        // Only bother the user if they asked, or if it's the dev build.
+        if (p.dev) render({ msg: t('upd_dev'), auto: true });
+        else if (manualCheck) render({ msg: t('upd_none'), auto: true });
+        manualCheck = false;
+        break;
+      case 'error':
+        if (manualCheck) render({ msg: t('upd_error'), auto: true });
+        manualCheck = false;
+        break;
+    }
+  });
+
+  dismiss.onclick = hideBanner;
+
+  // "Check for updates" in the settings drawer.
+  const drawerUpdate = $('#drawerUpdate');
+  if (drawerUpdate) drawerUpdate.onclick = () => {
+    manualCheck = true;
+    closeModals();
+    render({ msg: t('upd_checking'), spin: true });
+    window.sweep.checkForUpdates();
+  };
+
+  // "Install updates automatically" switch. Default OFF: the user is only
+  // notified and installs on their own. When ON, downloaded patches apply
+  // themselves (and also install silently when the app is closed).
+  const AUTO_KEY = 'sweep-auto-install';
+  function autoOn() { return localStorage.getItem(AUTO_KEY) === '1'; }
+  const autoSwitch = $('#autoUpdateSwitch');
+  if (autoSwitch) {
+    autoSwitch.classList.toggle('on', autoOn());   // reflect stored choice
+    autoSwitch.onclick = () => {
+      const willEnable = !autoSwitch.classList.contains('on');
+      autoSwitch.classList.toggle('on', willEnable);
+      localStorage.setItem(AUTO_KEY, willEnable ? '1' : '0');
+      window.sweep.setAutoInstall(willEnable);
+      // If a patch is already downloaded and waiting, honour the new choice
+      // right away instead of making the user hunt for the banner.
+      if (willEnable && downloadedReady) window.sweep.installUpdate();
+    };
+  }
+  // Tell the main process the current preference at startup (governs the
+  // silent install-on-quit behaviour).
+  window.sweep.setAutoInstall(autoOn());
+})();
+
 /* ================= Intro / onboarding ================= */
 const INTRO_STEPS = ['t1', 't2', 't3', 't4'];
 let introStep = 0;
@@ -1691,6 +1822,17 @@ function mountDemo() {
   const langChosen = localStorage.getItem('sweep-lang-chosen');
   let sys = null;
   try { sys = await window.sweep.getSystemInfo(); } catch {}
+
+  // Real version from package.json (via the main process). Falls back to
+  // the hard-coded constant if the bridge isn't there (e.g. plain browser).
+  try {
+    const v = await window.sweep.getAppVersion();
+    if (v) {
+      APP_VERSION = v;
+      const fv = $('#footVer'); if (fv) fv.textContent = 'v' + APP_VERSION;
+      const av = $('#aboutVer'); if (av) av.textContent = APP_VERSION;
+    }
+  } catch {}
   if (!langChosen && sys) {
     lang = (sys.locale || '').toLowerCase().startsWith('de') ? 'de' : 'en';
     localStorage.setItem('sweep-lang', lang);

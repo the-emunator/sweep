@@ -18,6 +18,41 @@ body.dark{
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
+
+/* ---------- auto-update banner ---------- */
+.update-banner{
+  position:fixed;left:50%;top:14px;transform:translateX(-50%) translateY(-140%);
+  z-index:1000;display:none;align-items:center;gap:12px;
+  max-width:min(560px,calc(100vw - 28px));
+  padding:11px 12px 11px 16px;border-radius:14px;
+  background:var(--surface);border:1px solid var(--border-strong);
+  box-shadow:var(--shadow);opacity:0;
+  transition:transform .35s cubic-bezier(.2,.9,.3,1.2),opacity .3s ease;
+}
+.update-banner.show{display:flex;transform:translateX(-50%) translateY(0);opacity:1}
+.update-text{font-size:13.5px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.update-actions{display:flex;align-items:center;gap:6px;margin-left:auto}
+.update-btn{
+  background:var(--accent);color:#fff;border:none;cursor:pointer;
+  padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;
+  font-family:inherit;white-space:nowrap;transition:filter .15s ease;
+}
+.update-btn:hover{filter:brightness(1.08)}
+.update-btn[hidden]{display:none}
+.update-close{
+  display:flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:8px;border:none;cursor:pointer;
+  background:none;color:var(--muted);transition:background .15s ease,color .15s ease;
+}
+.update-close:hover{background:var(--surface-2);color:var(--text)}
+.update-close svg{width:16px;height:16px}
+.update-spinner{
+  width:15px;height:15px;flex:0 0 auto;border-radius:50%;
+  border:2px solid var(--border-strong);border-top-color:var(--accent);
+  animation:update-spin .7s linear infinite;
+}
+.update-spinner[hidden]{display:none}
+@keyframes update-spin{to{transform:rotate(360deg)}}
 body{
   font-family:'Inter',system-ui,sans-serif;
   background:var(--bg);color:var(--text);
